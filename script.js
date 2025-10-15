@@ -120,7 +120,7 @@ document.getElementById("pagoForm").addEventListener("submit", async e => {
 
     try {
       const img = new Image();
-      img.src = "public/LOGO_RECIBO[1].png";
+      img.src = "public/LOGO_RECIBO.png";
       await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
       doc.addImage(img, "PNG", 15, 15, 40, 40);
     } catch (err) {
