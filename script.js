@@ -47,7 +47,6 @@ altaForm.addEventListener("submit", async e => {
     const data = await res.json();
 
     alert(data.message);
-
     if (data.success) {
       await cargarAlumnos();
     }
@@ -104,12 +103,12 @@ document.getElementById("pagoForm").addEventListener("submit", async e => {
   };
 
   try {
-    // ✅ Enviar el POST primero
+    // --- Enviar el POST ---
     const res = await fetch(scriptURL, { method: "POST", body: JSON.stringify(body) });
     const data = await res.json();
     if (!data.success) throw new Error("No se pudo registrar el pago");
 
-    // --- Limpiar formulario ANTES de generar PDF ---
+    // --- Limpiar formulario ---
     e.target.reset();
     alumnoInput.dataset.selected = "";
     alumnoList.innerHTML = "";
@@ -150,8 +149,15 @@ document.getElementById("pagoForm").addEventListener("submit", async e => {
     doc.setFontSize(10);
     doc.text("Gracias por su pago. Conserva este comprobante.", pageWidth / 2, startY + 15, { align: "center" });
 
-    // --- Descargar PDF ---
-    doc.save(`Recibo_${alumno.Nombre}_${mes}.pdf`);
+    // --- Detectar móvil ---
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      const pdfBlob = doc.output("blob");
+      const url = URL.createObjectURL(pdfBlob);
+      window.open(url, "_blank"); // Abrir PDF en nueva pestaña en móviles
+    } else {
+      doc.save(`Recibo_${alumno.Nombre}_${mes}.pdf`); // Descargar en escritorio
+    }
 
   } catch (err) {
     alert("❌ Error al generar PDF o registrar pago");
