@@ -45,6 +45,7 @@
               <input list="alumnoList" id="alumnoInput" class="form-control" placeholder="Buscar o ingresar alumno">
               <div id="alumnoList" class="list-group position-absolute w-100" style="z-index:1000;"></div>
             </div>
+
             <div class="mb-3">
               <select id="conceptoSelect" class="form-select" required>
                 <option value="">Seleccione concepto...</option>
@@ -53,6 +54,7 @@
                 <option value="Evento">Evento</option>
               </select>
             </div>
+
             <div class="mb-3">
               <select id="mesSelect" class="form-select" required>
                 <option value="">Seleccione mes...</option>
@@ -61,12 +63,27 @@
                 <option>Septiembre</option><option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
               </select>
             </div>
-            <div class="mb-3"><input type="number" class="form-control" id="importe" placeholder="Importe" required></div>
+
+            <!-- NUEVO CAMPO: Medio de Pago -->
+            <div class="mb-3">
+              <select id="medioPagoSelect" class="form-select" required>
+                <option value="">Seleccione medio de pago...</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Efectivo">Efectivo</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <input type="number" class="form-control" id="importe" placeholder="Importe" required>
+            </div>
+
             <button type="submit" class="btn btn-danger w-100 fw-bold">Generar PDF</button>
           </form>
         </div>
       </div>
     </div>
+
   </div>
 </main>
 

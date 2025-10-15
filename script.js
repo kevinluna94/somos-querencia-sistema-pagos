@@ -1,4 +1,4 @@
-const scriptURL = "https://script.google.com/macros/s/AKfycbyh7oglN9HKbf6Kmd7kKkQu26-huzv-v7NkRN7LkbiI_-GS6Bqm0NxvLJj5W1q_wKLbgw/exec";
+const scriptURL = "https://script.google.com/macros/s/AKfycbxOJAZtoRpHBRZpxOGO-wTmIErmHOLhxqz-hoq3wPQVs8S9ebIvwxSeHGv8UTSmH3LINw/exec";
 
 const altaForm = document.getElementById("altaForm");
 const altaSection = document.getElementById("altaSection");
@@ -20,11 +20,11 @@ document.getElementById("btnPago").addEventListener("click", () => {
 });
 
 // --- Cargar alumnos ---
-async function cargarAlumnos(){
+async function cargarAlumnos() {
   try {
     const res = await fetch(scriptURL);
     alumnosData = await res.json();
-  } catch(err){
+  } catch (err) {
     console.error("Error al cargar alumnos:", err);
   }
 }
@@ -38,7 +38,6 @@ altaForm.addEventListener("submit", async e => {
   const dni = document.getElementById("dni").value.trim();
   const telefono = document.getElementById("telefono").value.trim();
 
-  // Limpiar campos inmediatamente
   altaForm.reset();
 
   const body = { tipo: "alta", Nombre: nombre, Apellido: apellido, DNI: dni, Telefono: telefono };
@@ -49,11 +48,10 @@ altaForm.addEventListener("submit", async e => {
 
     alert(data.message);
 
-    if(data.success){
-      // Actualizar lista local de alumnos
+    if (data.success) {
       await cargarAlumnos();
     }
-  } catch(err){
+  } catch (err) {
     alert("❌ Error al agregar alumno");
     console.error(err);
   }
@@ -63,9 +61,12 @@ altaForm.addEventListener("submit", async e => {
 alumnoInput.addEventListener("input", () => {
   const query = alumnoInput.value.toLowerCase();
   alumnoList.innerHTML = "";
-  if(!query) return;
+  if (!query) return;
 
-  const matches = alumnosData.filter(a => `${a.Nombre} ${a.Apellido}`.toLowerCase().includes(query));
+  const matches = alumnosData.filter(a =>
+    `${a.Nombre} ${a.Apellido}`.toLowerCase().includes(query)
+  );
+
   matches.forEach(a => {
     const item = document.createElement("div");
     item.className = "list-group-item list-group-item-action";
@@ -87,55 +88,69 @@ document.getElementById("pagoForm").addEventListener("submit", async e => {
   const concepto = document.getElementById("conceptoSelect").value;
   const mes = document.getElementById("mesSelect").value;
   const importe = document.getElementById("importe").value;
+  const medioPago = document.getElementById("medioPagoSelect").value;
 
-  let alumno = alumnoInput.dataset.selected ? JSON.parse(alumnoInput.dataset.selected) : { Nombre: alumnoInput.value, Apellido:"", DNI:"", Telefono:"" };
-  const body = { tipo:"pago", ...alumno, Concepto: concepto, Importe: importe, MesPago: mes };
+  const alumno = alumnoInput.dataset.selected
+    ? JSON.parse(alumnoInput.dataset.selected)
+    : { Nombre: alumnoInput.value, Apellido: "", DNI: "", Telefono: "" };
+
+  const body = {
+    tipo: "pago",
+    ...alumno,
+    Concepto: concepto,
+    Importe: importe,
+    MesPago: mes,
+    MedioPago: medioPago
+  };
 
   try {
-    if(alumnoInput.dataset.selected){
-      await fetch(scriptURL, { method:"POST", body: JSON.stringify(body) });
-    }
+    // ✅ Siempre enviar el POST (antes solo se hacía si dataset.selected existía)
+    await fetch(scriptURL, { method: "POST", body: JSON.stringify(body) });
 
+    // --- Limpiar formulario ANTES de generar el PDF ---
+    e.target.reset();
+    alumnoInput.dataset.selected = "";
+    alumnoList.innerHTML = "";
+
+    // --- Generar PDF con jsPDF ---
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF("p","mm","a4");
+    const doc = new jsPDF("p", "mm", "a4");
     const pageWidth = doc.internal.pageSize.getWidth();
 
     try {
       const img = new Image();
-      img.src = "public/image.png";
+      img.src = "public/LOGO_RECIBO[1].png";
       await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
       doc.addImage(img, "PNG", 15, 15, 40, 40);
-    } catch(err){
+    } catch (err) {
       console.warn("Logo no cargado", err);
     }
 
     doc.setFontSize(18);
-    doc.text("COMPROBANTE DE PAGO", pageWidth/2, 30, {align:"center"});
+    doc.text("COMPROBANTE DE PAGO", pageWidth / 2, 30, { align: "center" });
     doc.setFontSize(12);
-    doc.text("Academia: Somos Querencia", pageWidth/2, 38, {align:"center"});
-    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, pageWidth-20, 38, {align:"right"});
+    doc.text("SOMOS QUERENCIA by Matias Ivan Collazo", pageWidth / 2, 38, { align: "center" });
+    doc.text(`Fecha: ${new Date().toLocaleDateString()}`, pageWidth - 20, 38, { align: "right" });
 
     doc.setLineWidth(0.5);
-    doc.rect(10, 60, pageWidth-20, 90);
+    doc.rect(10, 60, pageWidth - 20, 110);
 
     let startY = 70;
-    doc.text(`Nombre: ${alumno.Nombre} ${alumno.Apellido}`, 15, startY); startY+=10;
-    doc.text(`DNI: ${alumno.DNI}`, 15, startY); startY+=10;
-    doc.text(`Teléfono: ${alumno.Telefono}`, 15, startY); startY+=10;
-    doc.text(`Concepto: ${concepto}`, 15, startY); startY+=10;
-    doc.text(`Mes: ${mes}`, 15, startY); startY+=10;
+    doc.text(`Nombre: ${alumno.Nombre} ${alumno.Apellido}`, 15, startY); startY += 10;
+    doc.text(`DNI: ${alumno.DNI}`, 15, startY); startY += 10;
+    doc.text(`Teléfono: ${alumno.Telefono}`, 15, startY); startY += 10;
+    doc.text(`Concepto: ${concepto}`, 15, startY); startY += 10;
+    doc.text(`Mes: ${mes}`, 15, startY); startY += 10;
+    doc.text(`Medio de Pago: ${medioPago}`, 15, startY); startY += 10;
     doc.text(`Importe: $${importe}`, 15, startY);
 
-    doc.line(15, startY+5, pageWidth-15, startY+5);
+    doc.line(15, startY + 5, pageWidth - 15, startY + 5);
     doc.setFontSize(10);
-    doc.text("Gracias por su pago. Conserva este comprobante.", pageWidth/2, startY+15, {align:"center"});
+    doc.text("Gracias por su pago. Conserva este comprobante.", pageWidth / 2, startY + 15, { align: "center" });
 
     doc.save(`Recibo_${alumno.Nombre}_${mes}.pdf`);
 
-    e.target.reset();
-    alumnoInput.dataset.selected="";
-    alumnoList.innerHTML="";
-  } catch(err){
+  } catch (err) {
     alert("❌ Error al generar PDF");
     console.error(err);
   }

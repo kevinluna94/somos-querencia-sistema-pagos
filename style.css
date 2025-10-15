@@ -1,14 +1,56 @@
-body { background-color: #faf8f3; color: #333; }
-
-.hero {
-  background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXpnx7zla-mof-7nHX0ojqGOCUc9kj1Z83nw&s") center/cover no-repeat;
-  min-height: 60vh;
-  text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
+body {
+  background-color: #faf8f3;
+  color: #333;
 }
 
-.form-section { display: none; }
-.form-section.active { display: block; animation: fadeIn 0.4s ease; }
+/* Sección principal con fondo */
+.hero {
+  position: relative;
+  background: url("public/LOGO_PORTADA[1].png") center/cover no-repeat;
+  min-height: 60vh;
+  text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
 
-@keyframes fadeIn { from {opacity:0; transform:translateY(15px);} to {opacity:1; transform:translateY(0);} }
+/* Capa semitransparente negra sobre la imagen */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55); /* Fondo negro con transparencia */
+  z-index: 1;
+}
 
-.list-group-item:hover { cursor: pointer; background-color: #f8f9fa; }
+/* Asegura que el texto y botones estén por encima del overlay */
+.hero > * {
+  position: relative;
+  z-index: 2;
+}
+
+.form-section {
+  display: none;
+}
+
+.form-section.active {
+  display: block;
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.list-group-item:hover {
+  cursor: pointer;
+  background-color: #f8f9fa;
+}
