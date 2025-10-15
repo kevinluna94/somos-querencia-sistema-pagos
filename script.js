@@ -104,15 +104,17 @@ document.getElementById("pagoForm").addEventListener("submit", async e => {
   };
 
   try {
-    // ✅ Siempre enviar el POST (antes solo se hacía si dataset.selected existía)
-    await fetch(scriptURL, { method: "POST", body: JSON.stringify(body) });
+    // ✅ Enviar el POST primero
+    const res = await fetch(scriptURL, { method: "POST", body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!data.success) throw new Error("No se pudo registrar el pago");
 
-    // --- Limpiar formulario ANTES de generar el PDF ---
+    // --- Limpiar formulario ANTES de generar PDF ---
     e.target.reset();
     alumnoInput.dataset.selected = "";
     alumnoList.innerHTML = "";
 
-    // --- Generar PDF con jsPDF ---
+    // --- Generar PDF ---
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF("p", "mm", "a4");
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -148,10 +150,11 @@ document.getElementById("pagoForm").addEventListener("submit", async e => {
     doc.setFontSize(10);
     doc.text("Gracias por su pago. Conserva este comprobante.", pageWidth / 2, startY + 15, { align: "center" });
 
+    // --- Descargar PDF ---
     doc.save(`Recibo_${alumno.Nombre}_${mes}.pdf`);
 
   } catch (err) {
-    alert("❌ Error al generar PDF");
+    alert("❌ Error al generar PDF o registrar pago");
     console.error(err);
   }
 });
